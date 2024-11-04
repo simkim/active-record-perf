@@ -13,7 +13,7 @@ require "active_record"
 
 
 $compute_timing = false
-$eager_loading = false
+$eager_loading = true
 
 ActiveRecord::Base.establish_connection(
   adapter: 'postgresql',
@@ -86,14 +86,18 @@ class Post < ActiveRecord::Base
   has_many :images, as: :illustrable
 end
 
-class PostView < ActiveRecord::Base
-  belongs_to :post
-  belongs_to :user
-end
-
 class Comment < ActiveRecord::Base
   belongs_to :post
   has_many :images, as: :illustrable
+end
+
+class Image < ActiveRecord::Base
+  belongs_to :illustrable, polymorphic: true
+end
+
+class PostView < ActiveRecord::Base
+  belongs_to :post
+  belongs_to :user
 end
 
 class Video < ActiveRecord::Base
@@ -107,9 +111,6 @@ end
 class TextComment < Comment
 end
 
-class Image < ActiveRecord::Base
-  belongs_to :illustrable, polymorphic: true
-end
 
 def test(title)
   start = Time.now
@@ -220,7 +221,7 @@ end
 test "preloader with STI" do
   posts = Post.includes(:comments).to_a
   ActiveRecord::Associations::Preloader.new(
-    records: posts.flat_map { |post| post.comments.select { |c| c.is_a?(VideoComment) } },
+    records: posts.flat_map { |post| post.comments.select { |c| c.is_a? VideoComment } },
     associations: :video
   ).call
 end
@@ -233,4 +234,9 @@ if $eager_loading
   test "sub-eager_load with STI" do
     Post.eager_load(comments: :video).to_a
   end
+end
+
+test "explain" do
+  $logger.info "\nPost.where(view_count: 0).explain.count\n"
+  $logger.info Post.where(view_count: 0).explain.count
 end

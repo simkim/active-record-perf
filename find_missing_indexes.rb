@@ -41,7 +41,7 @@ class NoIndexDetector
     binds = binds.call if binds.respond_to?(:call)
 
     connection = ActiveRecord::Base.connection
-    connection.execute("SET enable_indexscan = off") if Rails.env.test?
+    connection.execute("SET enable_seqscan = off") if Rails.env.test?
     result = connection.exec_query(
       "EXPLAIN #{query}",
       "INDEX DETECTOR",
