@@ -194,6 +194,7 @@ test "includes with polymorphic" do
   Image.includes(:illustrable).to_a
 end
 
+# Implemented by https://github.com/rails/rails/pull/42553/files#diff-97709b319ca07f6cd3f4d6b8a8c443d0cb3e7487696098be377aa9fa78907a35
 test "sub-includes with polymorphism" do
   Image.includes(illustrable: :comments).to_a
 end
